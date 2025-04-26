@@ -3,18 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IOPWAVE - Intraocular Pressure Monitor</title>
+  <title>GlaucoGuard - Glaucoma Monitoring System</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-app.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-auth.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-database.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <style>
     :root {
-      --primary: #2D82B7;
-      --primary-light: #42A5F5;
-      --primary-dark: #1A5276;
-      --danger: #F44336;
-      --success: #4CAF50;
-      --text-dark: #333;
-      --text-light: #666;
-      --bg-light: #f9f9f9;
-      --white: #ffffff;
+      --primary: #2e8b57;
+      --secondary: #88c488;
+      --light: #e0f0e0;
+      --dark: #1a5130;
+      --text: #333;
+      --warning: #f39c12;
+      --danger: #e74c3c;
     }
     
     * {
@@ -25,770 +27,823 @@
     }
     
     body {
-      background-color: var(--bg-light);
-      color: var(--text-dark);
-      padding-top: 70px; /* Space for fixed navbar */
+      background-color: #f8fcf8;
+      color: var(--text);
+      line-height: 1.6;
     }
     
-    /* Fixed Navigation Bar */
-    .navbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 0;
+    }
+    
+    header {
       background-color: var(--primary);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-      padding: 0 20px;
+      color: white;
+      padding: 1rem 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 70px;
-      z-index: 1000;
     }
     
-    .navbar-brand {
-      font-size: 1.8rem;
+    .logo {
+      font-size: 1.5rem;
       font-weight: bold;
-      color: var(--white);
-      text-decoration: none;
       display: flex;
       align-items: center;
     }
     
-    .navbar-brand:hover {
-      color: rgba(255, 255, 255, 0.9);
-    }
-    
-    .navbar-brand i {
+    .logo-icon {
       margin-right: 10px;
+      font-size: 1.8rem;
     }
     
-    .navbar-nav {
+    .nav-links {
       display: flex;
       list-style: none;
     }
     
-    .nav-item {
-      margin-left: 20px;
+    .nav-links li {
+      margin-left: 1.5rem;
     }
     
-    .nav-link {
-      color: var(--white);
+    .nav-links a {
+      color: white;
       text-decoration: none;
-      font-size: 1.1rem;
-      padding: 8px 15px;
-      border-radius: 5px;
-      transition: background-color 0.3s;
+      font-weight: 500;
+      transition: all 0.3s ease;
     }
     
-    .nav-link:hover, .nav-link.active {
-      background-color: var(--primary-dark);
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    /* Hero Section */
-    .hero {
-      background: linear-gradient(to right, var(--primary-dark), var(--primary));
-      color: var(--white);
-      padding: 80px 20px;
-      text-align: center;
-      border-radius: 10px;
-      margin-bottom: 40px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    
-    .hero h1 {
-      font-size: 3.5rem;
-      margin-bottom: 20px;
-      color: var(--white);
-    }
-    
-    .hero p {
-      font-size: 1.3rem;
-      max-width: 800px;
-      margin: 0 auto;
-      margin-bottom: 30px;
+    .nav-links a:hover {
+      color: var(--light);
     }
     
     .btn {
-      display: inline-block;
-      padding: 12px 24px;
-      background-color: var(--white);
-      color: var(--primary);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
       text-decoration: none;
-      border-radius: 30px;
-      font-weight: bold;
-      font-size: 1.1rem;
-      transition: all 0.3s;
-      margin: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-block;
     }
     
-    .btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+      border: none;
     }
     
-    /* Info Sections */
-    .section {
-      margin-bottom: 60px;
+    .btn-primary:hover {
+      background-color: var(--dark);
     }
     
-    .section-title {
-      font-size: 2.2rem;
+    .btn-outline {
+      background-color: transparent;
       color: var(--primary);
-      margin-bottom: 20px;
+      border: 1px solid var(--primary);
+    }
+    
+    .btn-outline:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-warning {
+      background-color: var(--warning);
+      color: white;
+      border: none;
+    }
+    
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+      border: none;
+    }
+    
+    section {
+      padding: 3rem 0;
+    }
+    
+    h1, h2, h3 {
+      color: var(--dark);
+      margin-bottom: 1rem;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+    }
+    
+    h2 {
+      font-size: 2rem;
+    }
+    
+    h3 {
+      font-size: 1.5rem;
+    }
+    
+    p {
+      margin-bottom: 1.5rem;
+    }
+    
+    .hero {
+      background-color: var(--light);
+      padding: 4rem 0;
       text-align: center;
     }
     
+    .hero h1 {
+      margin-bottom: 1.5rem;
+    }
+    
+    .hero p {
+      font-size: 1.2rem;
+      max-width: 800px;
+      margin: 0 auto 2rem;
+    }
+    
     .card {
-      background-color: var(--white);
-      border-radius: 12px;
-      padding: 25px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
       transition: transform 0.3s ease;
-      margin-bottom: 20px;
     }
     
     .card:hover {
       transform: translateY(-5px);
     }
     
-    .card h3 {
-      font-size: 1.5rem;
-      margin-bottom: 15px;
+    .card-title {
       color: var(--primary);
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
     }
     
-    .card p {
-      color: var(--text-light);
-      line-height: 1.6;
-      margin-bottom: 15px;
-    }
-    
-    /* Features */
-    .features {
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
     }
     
-    .feature-card {
+    .team-member {
       text-align: center;
-      padding: 30px;
     }
     
-    .feature-icon {
-      font-size: 3rem;
-      color: var(--primary);
-      margin-bottom: 20px;
+    .team-member img {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 1rem;
     }
     
-    /* Testimonials */
-    .testimonial {
-      font-style: italic;
-      font-size: 1.1rem;
-      padding: 20px;
-      border-left: 4px solid var(--primary);
-      background-color: rgba(45, 130, 183, 0.05);
-      margin-bottom: 20px;
+    .team-member h3 {
+      margin-bottom: 0.5rem;
     }
     
-    .testimonial-author {
-      font-weight: bold;
-      color: var(--primary);
-      margin-top: 10px;
-      text-align: right;
+    .team-member p {
+      color: #666;
     }
     
-    /* Dashboard specific styles */
+    footer {
+      background-color: var(--dark);
+      color: white;
+      padding: 2rem 0;
+      text-align: center;
+    }
+    
     .dashboard {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-    
-    .reading-card {
-      text-align: center;
-    }
-    
-    .current-reading {
-      font-size: 3.5rem;
-      font-weight: bold;
-      margin: 20px 0;
-      color: var(--primary);
-    }
-    
-    .unit {
-      font-size: 1.2rem;
-      color: var(--text-light);
-    }
-    
-    .status {
-      display: inline-block;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: bold;
-      margin-top: 10px;
-      background-color: var(--success);
-      color: white;
-    }
-    
-    .status.high {
-      background-color: var(--danger);
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
     }
     
     .chart-container {
-      position: relative;
-      height: 300px;
       width: 100%;
-      grid-column: 1 / -1;
+      height: 400px;
     }
     
-    .stat {
-      margin-bottom: 15px;
+    .iop-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 2rem;
+      background-color: var(--light);
+      border-radius: 8px;
+      margin-bottom: 2rem;
     }
     
-    .stat-label {
-      color: var(--text-light);
-      margin-bottom: 5px;
-    }
-    
-    .stat-value {
-      font-size: 1.1rem;
+    .iop-value {
+      font-size: 4rem;
       font-weight: bold;
+      margin: 1rem 0;
       color: var(--primary);
     }
     
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 20px 0;
-      color: var(--text-light);
-      font-size: 0.9rem;
-      margin-top: 40px;
-      background-color: var(--white);
-      border-top: 1px solid rgba(0, 0, 0, 0.1);
+    .iop-status {
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-weight: bold;
     }
     
-    /* Eye graphic styling */
-    .eye-graphic {
-      max-width: 600px;
-      margin: 30px auto;
+    .status-normal {
+      background-color: #27ae60;
+      color: white;
+    }
+    
+    .status-warning {
+      background-color: var(--warning);
+      color: white;
+    }
+    
+    .status-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+    
+    form {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    label {
       display: block;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
     }
     
-    /* FAQ section */
-    .faq-item {
-      margin-bottom: 20px;
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
     }
     
-    .faq-question {
-      font-weight: bold;
-      color: var(--primary);
-      margin-bottom: 10px;
-      font-size: 1.2rem;
+    .login-container {
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--light);
     }
     
-    .faq-answer {
-      color: var(--text-light);
-      line-height: 1.6;
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      padding: 2rem;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
     
-    /* Research citation */
-    .research-citation {
-      background-color: rgba(45, 130, 183, 0.05);
-      padding: 15px;
-      border-radius: 5px;
-      font-size: 0.9rem;
-      color: var(--text-light);
-      margin-top: 10px;
+    .login-title {
+      text-align: center;
+      margin-bottom: 2rem;
     }
-    
-    /* Responsive design */
-    @media (max-width: 768px) {
-      .navbar {
-        padding: 0 10px;
-      }
-      
-      .navbar-brand {
-        font-size: 1.5rem;
-      }
-      
-      .nav-item {
-        margin-left: 10px;
-      }
-      
-      .hero h1 {
-        font-size: 2.5rem;
-      }
-      
-      .hero p {
-        font-size: 1.1rem;
-      }
-      
-      .features {
-        grid-template-columns: 1fr;
-      }
-      
-      .chart-container {
-        height: 250px;
-      }
-    }
-    
-    /* Pages display control */
-    .page {
+
+    .hidden {
       display: none;
     }
     
-    .page.active {
-      display: block;
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+      
+      .nav-links {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Fixed Navigation Bar -->
-  <nav class="navbar">
-    <a href="#" class="navbar-brand" onclick="showPage('home')">IOPWAVE</a>
-    <ul class="navbar-nav">
-      <li class="nav-item">
-        <a href="#" class="nav-link active" onclick="showPage('home')">Home</a>
-      </li>
-      <li class="nav-item">
-        <a href="#" class="nav-link" onclick="showPage('dashboard')">Dashboard</a>
-      </li>
-      <li class="nav-item">
-        <a href="#" class="nav-link" onclick="showPage('about')">About</a>
-      </li>
-    </ul>
-  </nav>
+  <div id="login-page" class="login-container">
+    <div class="login-card">
+      <h2 class="login-title">GlaucoGuard</h2>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+        <p style="text-align: center; margin-top: 1rem;">Don't have an account? <a href="#" id="signup-link">Sign up</a></p>
+      </form>
+    </div>
+  </div>
 
-  <!-- Home Page -->
-  <div id="home" class="page active">
-    <div class="container">
-      <!-- Hero Section -->
+  <div id="main-content" class="hidden">
+    <header>
+      <div class="container">
+        <nav>
+          <div class="logo">
+            <span class="logo-icon">👁</span>
+            <span>GlaucoGuard</span>
+          </div>
+          <ul class="nav-links">
+            <li><a href="#" class="nav-link" data-page="home">Home</a></li>
+            <li><a href="#" class="nav-link" data-page="dashboard">Dashboard</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <div id="home-page">
       <section class="hero">
-        <h1>IOPWAVE</h1>
-        <p>Revolutionary real-time monitoring for intraocular pressure. Early detection and management of glaucoma has never been easier.</p>
-        <a href="#" class="btn" onclick="showPage('dashboard')">View Dashboard</a>
-        <a href="#" class="btn" onclick="showPage('about')">Learn More</a>
-      </section>
-      
-      <!-- What is IOP Section -->
-      <section class="section">
-        <h2 class="section-title">Understanding Intraocular Pressure</h2>
-        <div class="card">
-          <h3>What is Intraocular Pressure?</h3>
-          <p>Intraocular pressure (IOP) is the fluid pressure inside the eye. It is determined by the balance between the production and drainage of aqueous humor, the clear fluid that fills the front part of the eye.</p>
-          <p>Normal IOP ranges from 10-21 mmHg. Elevated IOP is a significant risk factor for glaucoma, a condition that can lead to optic nerve damage and vision loss if left untreated.</p>
-          <p>Regular monitoring of IOP is essential for early detection and management of glaucoma, particularly for at-risk individuals.</p>
+        <div class="container">
+          <h1>Welcome to GlaucoGuard</h1>
+          <p>An innovative IoT-based glaucoma monitoring system that helps detect and track Intraocular Pressure (IOP) for early glaucoma diagnosis and management.</p>
+          <a href="#" class="btn btn-primary nav-link" data-page="dashboard">View Dashboard</a>
         </div>
-        
-        <img src="/api/placeholder/600/300" alt="Eye Anatomy Diagram" class="eye-graphic" />
       </section>
-      
-      <!-- Why Monitor Section -->
-      <section class="section">
-        <h2 class="section-title">Why Monitor IOP?</h2>
-        <div class="features">
-          <div class="card feature-card">
-            <div class="feature-icon">⚠️</div>
-            <h3>Early Detection</h3>
-            <p>Continuous monitoring helps detect IOP spikes and patterns that might be missed during occasional clinical measurements.</p>
-          </div>
-          
-          <div class="card feature-card">
-            <div class="feature-icon">📊</div>
-            <h3>Personalized Care</h3>
-            <p>Detailed IOP data allows healthcare providers to customize treatment plans based on individual patterns.</p>
-          </div>
-          
-          <div class="card feature-card">
-            <div class="feature-icon">👁️</div>
-            <h3>Vision Preservation</h3>
-            <p>Timely intervention based on continuous monitoring can help prevent irreversible vision loss from glaucoma.</p>
+
+      <section id="about">
+        <div class="container">
+          <h2>About Glaucoma</h2>
+          <div class="card">
+            <p>Glaucoma is a group of eye conditions that damage the optic nerve, which is vital for good vision. This damage is often caused by abnormally high pressure in your eye (intraocular pressure or IOP). Glaucoma is one of the leading causes of blindness for people over the age of 60.</p>
+            <p>It can occur at any age but is more common in older adults. Many forms of glaucoma have no warning signs, and the effect is so gradual that you may not notice a change in vision until the condition is at an advanced stage.</p>
+            <p>Because vision loss due to glaucoma can't be recovered, it's important to have regular eye exams that include measurements of your eye pressure so a diagnosis can be made in its early stages and treated appropriately.</p>
           </div>
         </div>
       </section>
-      
-      <!-- Research Insight -->
-      <section class="section">
-        <h2 class="section-title">Research Insights</h2>
-        <div class="card">
-          <h3>Beyond Office Hours</h3>
-          <p>Recent studies have shown that IOP fluctuates throughout the day, with peaks often occurring outside of regular office hours when traditional measurements are taken. Continuous monitoring provides a complete picture of these variations.</p>
-          <p>Research indicates that IOP fluctuation may be as important a risk factor for glaucoma progression as consistently elevated pressure.</p>
-          <div class="research-citation">
-            Hughes E, et al. "Circadian Rhythm of Intraocular Pressure and Its Relation to Glaucoma Progression." Journal of Ophthalmology, 2023.
+
+      <section id="identification">
+        <div class="container">
+          <h2>How to Identify Glaucoma</h2>
+          <div class="grid">
+            <div class="card">
+              <h3 class="card-title">Early Symptoms</h3>
+              <ul>
+                <li>Patchy blind spots in your side (peripheral) or central vision, frequently in both eyes</li>
+                <li>Tunnel vision in the advanced stages</li>
+                <li>Severe headache</li>
+                <li>Eye pain</li>
+                <li>Blurred vision</li>
+                <li>Halos around lights</li>
+                <li>Eye redness</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Risk Factors</h3>
+              <ul>
+                <li>High intraocular pressure (IOP)</li>
+                <li>Age over 60</li>
+                <li>Family history of glaucoma</li>
+                <li>Medical conditions (diabetes, heart disease, high blood pressure)</li>
+                <li>Eye injuries</li>
+                <li>Long-term use of corticosteroid medications</li>
+                <li>Thin corneas</li>
+                <li>Extreme nearsightedness or farsightedness</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Diagnostic Tests</h3>
+              <ul>
+                <li>Tonometry: Measures intraocular pressure</li>
+                <li>Ophthalmoscopy: Examines the optic nerve</li>
+                <li>Perimetry: Tests peripheral vision</li>
+                <li>Gonioscopy: Inspects the drainage angle</li>
+                <li>Pachymetry: Measures corneal thickness</li>
+                <li>OCT: Optical Coherence Tomography</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
-      
-      <!-- Testimonials -->
-      <section class="section">
-        <h2 class="section-title">What Healthcare Professionals Say</h2>
-        <div class="card">
-          <div class="testimonial">
-            "The continuous monitoring system has revolutionized how we manage our glaucoma patients. We can now detect IOP spikes that would have gone unnoticed with traditional in-office measurements."
-            <div class="testimonial-author">- Dr. Sarah Johnson, Ophthalmologist</div>
-          </div>
-          
-          <div class="testimonial">
-            "Having access to real-time IOP data has improved our ability to adjust medication dosages promptly and effectively. The dashboard interface makes it easy to spot concerning trends."
-            <div class="testimonial-author">- Dr. Michael Chen, Glaucoma Specialist</div>
+
+      <section id="existing-models">
+        <div class="container">
+          <h2>Existing Monitoring Models</h2>
+          <div class="grid">
+            <div class="card">
+              <h3 class="card-title">Goldmann Applanation Tonometry</h3>
+              <p>The gold standard for measuring IOP, requiring a clinical setting. It involves direct contact with the cornea and provides accurate readings but needs a trained professional.</p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Rebound Tonometry</h3>
+              <p>Uses a probe that makes a momentary contact with the cornea. More portable than Goldmann but still requires clinical expertise for accurate measurements.</p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Non-contact Tonometry</h3>
+              <p>Uses a puff of air to measure IOP. Less accurate than contact methods but convenient for screening purposes.</p>
+            </div>
           </div>
         </div>
       </section>
-      
-      <!-- FAQ Section -->
-      <section class="section">
-        <h2 class="section-title">Frequently Asked Questions</h2>
-        <div class="card">
-          <div class="faq-item">
-            <div class="faq-question">How often should IOP be monitored?</div>
-            <div class="faq-answer">For high-risk patients, daily monitoring provides the most comprehensive data. For maintenance and general screening, weekly measurements can be sufficient, but always follow your doctor's personalized recommendations.</div>
+
+      <section id="our-model">
+        <div class="container">
+          <h2>Our IoT-Based Model</h2>
+          <div class="card">
+            <h3 class="card-title">GlaucoGuard System</h3>
+            <p>Our innovative system uses ESP32 microcontroller coupled with ultrasonic sensors and pressure measurement to provide a non-invasive, real-time monitoring solution for intraocular pressure.</p>
+            <p>The system measures acoustic radiation force (ARF) and calculates corneal deformation, which is directly related to IOP. This data is then transmitted to a cloud database for analysis and monitoring.</p>
+            <p>Key features include:</p>
+            <ul>
+              <li>Real-time IOP monitoring</li>
+              <li>Cloud-based data storage and analysis</li>
+              <li>Remote access to IOP data</li>
+              <li>Early detection of IOP spikes</li>
+              <li>User-friendly web interface</li>
+              <li>Affordable and accessible technology</li>
+            </ul>
           </div>
-          
-          <div class="faq-item">
-            <div class="faq-question">What factors can affect IOP readings?</div>
-            <div class="faq-answer">Several factors can influence IOP, including time of day, body position, exercise, hydration levels, caffeine intake, and certain medications. The IOPWAVE system accounts for these variables in its analysis.</div>
-          </div>
-          
-          <div class="faq-item">
-            <div class="faq-question">Can elevated IOP be managed without surgery?</div>
-            <div class="faq-answer">Yes, in many cases. Eye drops, oral medications, laser treatments, and lifestyle modifications can effectively reduce IOP. Continuous monitoring helps determine the effectiveness of these non-surgical interventions.</div>
+        </div>
+      </section>
+
+      <section id="team">
+        <div class="container">
+          <h2>Our Team</h2>
+          <div class="grid">
+            <div class="card team-member">
+              <img src="/api/placeholder/150/150" alt="Team Member 1">
+              <h3>Dr. Sarah Johnson</h3>
+              <p>Biomedical Engineer</p>
+            </div>
+            <div class="card team-member">
+              <img src="/api/placeholder/150/150" alt="Team Member 2">
+              <h3>Prof. Michael Lee</h3>
+              <p>Ophthalmologist</p>
+            </div>
+            <div class="card team-member">
+              <img src="/api/placeholder/150/150" alt="Team Member 3">
+              <h3>Karthi</h3>
+              <p>IoT Developer</p>
+            </div>
+            <div class="card team-member">
+              <img src="/api/placeholder/150/150" alt="Team Member 4">
+              <h3>Emma Garcia</h3>
+              <p>Software Engineer</p>
+            </div>
           </div>
         </div>
       </section>
     </div>
-  </div>
 
-  <!-- Dashboard Page -->
-  <div id="dashboard" class="page">
-    <div class="container">
-      <section class="section">
-        <h2 class="section-title">IOP Monitoring Dashboard</h2>
-        
-        <div class="dashboard">
-          <div class="card reading-card">
-            <h3>Current IOP Reading</h3>
-            <div class="current-reading">
-              <span id="current-iop">--</span>
-              <span class="unit">mmHg</span>
+    <div id="dashboard-page" class="hidden">
+      <section>
+        <div class="container">
+          <h1>Glaucoma Monitoring Dashboard</h1>
+          <div class="iop-display">
+            <h2>Current IOP Reading</h2>
+            <div class="iop-value" id="current-iop">--</div>
+            <div class="iop-status" id="iop-status">Waiting for data...</div>
+          </div>
+          
+          <div class="dashboard">
+            <div class="card">
+              <h3 class="card-title">IOP History</h3>
+              <div class="chart-container">
+                <canvas id="iop-chart"></canvas>
+              </div>
             </div>
-            <div id="iop-status" class="status">Connecting...</div>
+            
+            <div class="card">
+              <h3 class="card-title">Manual IOP Check</h3>
+              <form id="manual-iop-form">
+                <div class="form-group">
+                  <label for="manual-iop">Enter IOP Value (mmHg)</label>
+                  <input type="number" id="manual-iop" min="0" max="80" step="0.1" required>
+                </div>
+                <div class="form-group">
+                  <label for="age">Age</label>
+                  <input type="number" id="age" min="0" max="120" required>
+                </div>
+                <div class="form-group">
+                  <label for="family-history">Family History of Glaucoma</label>
+                  <select id="family-history" required>
+                    <option value="">Select...</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="medical-conditions">Medical Conditions</label>
+                  <select id="medical-conditions" multiple>
+                    <option value="diabetes">Diabetes</option>
+                    <option value="hypertension">Hypertension</option>
+                    <option value="heart-disease">Heart Disease</option>
+                    <option value="none">None</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Check Risk</button>
+              </form>
+              <div id="risk-result" style="margin-top: 1.5rem;"></div>
+            </div>
           </div>
           
           <div class="card">
-            <h3>Summary</h3>
-            <div class="stat">
-              <p class="stat-label">Average (Last 5 Readings)</p>
-              <p class="stat-value" id="avg-iop">--</p>
+            <h3 class="card-title">Device Status</h3>
+            <div id="device-status">
+              <p>Current Status: <span id="status-text">Loading...</span></p>
+              <p>Last Updated: <span id="last-updated">-</span></p>
             </div>
-            <div class="stat">
-              <p class="stat-label">Latest Reading Time</p>
-              <p class="stat-value" id="latest-time">--</p>
-            </div>
-          </div>
-          
-          <div class="card chart-container">
-            <h3>IOP Trend</h3>
-            <canvas id="iop-chart"></canvas>
           </div>
         </div>
       </section>
     </div>
+
+    <footer>
+      <div class="container">
+        <p>&copy; 2025 GlaucoGuard. All rights reserved.</p>
+      </div>
+    </footer>
   </div>
 
-  <!-- About Page -->
-  <div id="about" class="page">
-    <div class="container">
-      <section class="section">
-        <h2 class="section-title">About IOPWAVE</h2>
-        <div class="card">
-          <h3>Our Mission</h3>
-          <p>IOPWAVE was created with a singular mission: to revolutionize how intraocular pressure is monitored and managed. We believe that continuous, real-time data is crucial for effective glaucoma prevention and treatment.</p>
-          <p>By combining cutting-edge sensor technology with intuitive data visualization, we aim to empower both patients and healthcare providers with the information needed to preserve vision and improve quality of life.</p>
-        </div>
-        
-        <div class="card">
-          <h3>The Team</h3>
-          <p>Our interdisciplinary team brings together expertise in ophthalmology, biomedical engineering, data science, and user experience design. We're passionate about creating solutions that make a meaningful difference in healthcare.</p>
-          <p>Founded in 2023, IOPWAVE has quickly established itself as a pioneer in non-invasive ocular monitoring technology.</p>
-        </div>
-        
-        <div class="card">
-          <h3>Technology</h3>
-          <p>The IOPWAVE system utilizes advanced microfluidic sensors that can detect minute changes in intraocular pressure. Our proprietary algorithms filter out noise and identify clinically significant patterns in the data.</p>
-          <p>All measurements are securely transmitted to our cloud database using encrypted connections, ensuring patient privacy while enabling real-time access to critical information.</p>
-        </div>
-      </section>
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <footer>
-    <p>© 2025 IOPWAVE Project | Made with ❤️ by Your Team</p>
-  </footer>
-
-  <!-- Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-app-compat.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-database-compat.min.js"></script>
-  
   <script>
-    // Page navigation
-    function showPage(pageId) {
-      // Hide all pages
-      document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-      });
-      
-      // Show selected page
-      document.getElementById(pageId).classList.add('active');
-      
-      // Update active nav link
-      document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.remove('active');
-      });
-      
-      // Find the link that was clicked and make it active
-      document.querySelectorAll('.nav-link').forEach(link => {
-        if (link.getAttribute('onclick').includes(pageId)) {
-          link.classList.add('active');
-        }
-      });
-      
-      // Initialize chart if showing dashboard
-      if (pageId === 'dashboard' && !chartInitialized) {
-        initializeChart();
-        setupFirebase();
-        chartInitialized = true;
-      }
-    }
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAg-sw9I-0YEN4rZmiXeWv5jbFar28MLPo",
+      databaseURL: "https://solar-panel-211c6-default-rtdb.asia-southeast1.firebasedatabase.app/",
+      projectId: "solar-panel-211c6",
+      appId: "1:307495629699:web:b9d0e1c2a9b7b8c71d307f"
+    };
     
-    // Variables to track initialization
-    let chartInitialized = false;
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    
+    // DOM Elements
+    const loginPage = document.getElementById('login-page');
+    const mainContent = document.getElementById('main-content');
+    const homePage = document.getElementById('home-page');
+    const dashboardPage = document.getElementById('dashboard-page');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const logoutBtn = document.getElementById('logout-btn');
+    const loginForm = document.getElementById('login-form');
+    const signupLink = document.getElementById('signup-link');
+    const currentIopElement = document.getElementById('current-iop');
+    const iopStatusElement = document.getElementById('iop-status');
+    const deviceStatusElement = document.getElementById('status-text');
+    const lastUpdatedElement = document.getElementById('last-updated');
+    const manualIopForm = document.getElementById('manual-iop-form');
+    const riskResultElement = document.getElementById('risk-result');
+    
+    // Chart setup
     let iopChart;
+    let iopData = {
+      labels: [],
+      datasets: [{
+        label: 'IOP (mmHg)',
+        data: [],
+        borderColor: '#2e8b57',
+        backgroundColor: 'rgba(46, 139, 87, 0.1)',
+        borderWidth: 2,
+        tension: 0.4
+      }]
+    };
     
-    // Initialize chart
-    function initializeChart() {
+    // Function to initialize the chart
+    function initChart() {
       const ctx = document.getElementById('iop-chart').getContext('2d');
       iopChart = new Chart(ctx, {
         type: 'line',
-        data: {
-          labels: [],
-          datasets: [{
-            label: 'IOP (mmHg)',
-            data: [],
-            backgroundColor: 'rgba(45, 130, 183, 0.2)',
-            borderColor: 'rgba(45, 130, 183, 1)',
-            borderWidth: 2,
-            tension: 0.4,
-            pointBackgroundColor: 'rgba(45, 130, 183, 1)',
-            pointRadius: 4
-          }]
-        },
+        data: iopData,
         options: {
           responsive: true,
           maintainAspectRatio: false,
           scales: {
             y: {
               beginAtZero: false,
+              suggestedMin: 10,
+              suggestedMax: 30,
               title: {
                 display: true,
                 text: 'IOP (mmHg)'
-              },
-              grid: {
-                color: 'rgba(0, 0, 0, 0.05)'
               }
             },
             x: {
-              grid: {
-                color: 'rgba(0, 0, 0, 0.05)'
+              title: {
+                display: true,
+                text: 'Time'
               }
-            }
-          },
-          plugins: {
-            legend: {
-              display: true,
-              position: 'top'
             }
           }
         }
       });
     }
     
-    // Firebase setup
-    function setupFirebase() {
-      // Firebase configuration
-      const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        databaseURL: "YOUR_DATABASE_URL",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID"
-      };
+    // Function to update the chart with new IOP data
+    function updateChart(timestamp, iop) {
+      const date = new Date(timestamp);
+      const timeString = date.toLocaleTimeString();
       
-      // Initialize Firebase
-      const app = firebase.initializeApp(firebaseConfig);
-      const database = firebase.database();
+      // Add new data point
+      iopData.labels.push(timeString);
+      iopData.datasets[0].data.push(iop);
       
-      // DOM Elements
-      const currentIopElement = document.getElementById('current-iop');
-      const iopStatusElement = document.getElementById('iop-status');
-      const avgIopElement = document.getElementById('avg-iop');
-      const latestTimeElement = document.getElementById('latest-time');
-      
-      // Function to update the status based on IOP value
-      function updateStatus(iopValue) {
-        if (iopValue < 21) {
-          iopStatusElement.textContent = 'Normal';
-          iopStatusElement.classList.remove('high');
-        } else {
-          iopStatusElement.textContent = 'High - Risk of Glaucoma';
-          iopStatusElement.classList.add('high');
-        }
+      // Keep only the last 10 data points for clarity
+      if (iopData.labels.length > 10) {
+        iopData.labels.shift();
+        iopData.datasets[0].data.shift();
       }
       
-      // Function to format timestamp
-      function formatTimestamp(timestamp) {
-        const date = new Date(timestamp);
-        return date.toLocaleString();
-      }
-      
-      // Function to calculate average of last 5 readings
-      function calculateAverage(readings) {
-        if (readings.length === 0) return "--";
-        
-        const lastFiveReadings = readings.slice(-5);
-        const sum = lastFiveReadings.reduce((acc, reading) => acc + reading.value, 0);
-        return (sum / lastFiveReadings.length).toFixed(1);
-      }
-      
-      // Listen for changes in the database
-      const iopRef = database.ref('iopReadings');
-      iopRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        
-        if (!data) return;
-        
-        // Convert object to array and sort by timestamp
-        const readings = Object.entries(data).map(([key, reading]) => ({
-          id: key,
-          value: reading.value,
-          timestamp: reading.timestamp
-        })).sort((a, b) => a.timestamp - b.timestamp);
-        
-        if (readings.length > 0) {
-          // Update current reading
-          const latestReading = readings[readings.length - 1];
-          currentIopElement.textContent = latestReading.value.toFixed(1);
-          updateStatus(latestReading.value);
-          latestTimeElement.textContent = formatTimestamp(latestReading.timestamp);
-          
-          // Update average
-          avgIopElement.textContent = calculateAverage(readings) + " mmHg";
-          
-          // Update chart
-          // Limit to last 20 readings for the chart
-          const chartData = readings.slice(-20);
-          
-          iopChart.data.labels = chartData.map(reading => {
-            const date = new Date(reading.timestamp);
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          });
-          
-          iopChart.data.datasets[0].data = chartData.map(reading => reading.value);
-          iopChart.update();
-        }
-      });
-      
-      // Handle connection errors
-      iopRef.on('error', (error) => {
-        console.error('Database error:', error);
-        iopStatusElement.textContent = 'Connection Error';
-        iopStatusElement.classList.add('high');
-      });
-      
-      // Simulate real-time data for demonstration
-      simulateData();
+      // Update the chart
+      iopChart.update();
     }
     
-    // Simulate data for demonstration purposes
-    function simulateData() {
-      // Create a mock database object
-      const mockDatabase = {
-        ref: function() {
-          return this;
-        },
-        on: function(event, callback) {
-          if (event === 'value') {
-            // Initial data
-            const initialData = {};
-            const now = Date.now();
-            
-            for (let i = 0; i < 10; i++) {
-              const id = 'reading_' + i;
-              const value = 15 + Math.random() * 8; // Between 15 and 23
-              const timestamp = now - (9 - i) * 60000; // One minute apart
-              
-              initialData[id] = { value, timestamp };
-            }
-            
-            // Call the callback with initial data
-            callback({
-              val: function() {
-                return initialData;
-              }
-            });
-            
-            // Update with new data every 5 seconds
-            let counter = 0;
-            setInterval(() => {
-              counter++;
-              const id = 'reading_' + (10 + counter);
-              const value = 15 + Math.random() * 8; // Between 15 and 23
-              const timestamp = Date.now();
-              
-              initialData[id] = { value, timestamp };
-              
-              // Call the callback with updated data
-              callback({
-                val: function() {
-                  return initialData;
-                }
-              });
-            }, 5000);
-          }
-        },
-        child: function() {
-          return this;
-        },
-        set: function() {
-          // Mock implementation
-        }
-      };
-      
-      // Replace firebase.database with our mock
-      if (typeof firebase === 'undefined' || typeof firebase.database !== 'function') {
-        window.firebase = {
-          database: function() {
-            return mockDatabase;
-          },
-          initializeApp: function() {
-            // Mock implementation
-          }
+    // Function to determine IOP status
+    function getIopStatus(iop) {
+      if (iop < 10) {
+        return {
+          text: 'Low IOP',
+          class: 'status-warning'
         };
+      } else if (iop >= 10 && iop <= 21) {
+        return {
+          text: 'Normal IOP',
+          class: 'status-normal'
+        };
+      } else {
+        return {
+          text: 'High IOP - Risk of Glaucoma',
+          class: 'status-danger'
+        };
+      }
+    }
+    
+    // Function to update the dashboard with IOP data
+    function updateIopDisplay(iop) {
+      currentIopElement.textContent = iop.toFixed(1);
+      
+      const status = getIopStatus(iop);
+      iopStatusElement.textContent = status.text;
+      iopStatusElement.className = 'iop-status ' + status.class;
+    }
+    
+    // Function to calculate glaucoma risk based on manual input
+    function calculateGlaucomaRisk(iop, age, familyHistory, medicalConditions) {
+      let riskScore = 0;
+      
+      // IOP risk
+      if (iop > 21) riskScore += 3;
+      else if (iop > 18) riskScore += 1;
+      
+      // Age risk
+      if (age > 60) riskScore += 2;
+      else if (age > 40) riskScore += 1;
+      
+      // Family history risk
+      if (familyHistory === 'yes') riskScore += 2;
+      
+      // Medical conditions risk
+      if (medicalConditions.length > 0 && !medicalConditions.includes('none')) {
+        riskScore += medicalConditions.length;
+      }
+      
+      // Risk categories
+      let riskLevel, riskClass, recommendation;
+      if (riskScore <= 2) {
+        riskLevel = 'Low Risk';
+        riskClass = 'status-normal';
+        recommendation = 'Routine eye check-ups every 1-2 years are recommended.';
+      } else if (riskScore <= 5) {
+        riskLevel = 'Moderate Risk';
+        riskClass = 'status-warning';
+        recommendation = 'Regular eye check-ups every 6-12 months are recommended. Monitor your IOP regularly.';
+      } else {
+        riskLevel = 'High Risk';
+        riskClass = 'status-danger';
+        recommendation = 'Please consult an ophthalmologist as soon as possible for a comprehensive eye examination.';
+      }
+      
+      return {
+        score: riskScore,
+        level: riskLevel,
+        class: riskClass,
+        recommendation: recommendation
+      };
+    }
+    
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize chart
+      initChart();
+      
+      // Navigation
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const page = this.getAttribute('data-page');
+          showPage(page);
+        });
+      });
+      
+      // Login form
+      loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        // Simulate authentication (in a real app, use Firebase Auth)
+        if (email && password) {
+          loginPage.classList.add('hidden');
+          mainContent.classList.remove('hidden');
+          showPage('home');
+        }
+      });
+      
+      // Signup link
+      signupLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('In a real app, this would open a signup form. For demo purposes, just use any email and password.');
+      });
+      
+      // Logout button
+      logoutBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        mainContent.classList.add('hidden');
+        loginPage.classList.remove('hidden');
+        document.getElementById('email').value = '';
+        document.getElementById('password').value = '';
+      });
+      
+      // Manual IOP form
+      manualIopForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const iop = parseFloat(document.getElementById('manual-iop').value);
+        const age = parseInt(document.getElementById('age').value);
+        const familyHistory = document.getElementById('family-history').value;
+        
+        const medicalConditionsSelect = document.getElementById('medical-conditions');
+        const medicalConditions = Array.from(medicalConditionsSelect.selectedOptions).map(option => option.value);
+        
+        const risk = calculateGlaucomaRisk(iop, age, familyHistory, medicalConditions);
+        
+        riskResultElement.innerHTML = `
+          <div class="card">
+            <h4>Risk Assessment</h4>
+            <p>Based on your input:</p>
+            <ul>
+              <li>IOP: ${iop} mmHg</li>
+              <li>Age: ${age}</li>
+              <li>Family History: ${familyHistory === 'yes' ? 'Yes' : 'No'}</li>
+              <li>Medical Conditions: ${medicalConditions.join(', ')}</li>
+            </ul>
+            <div class="iop-status ${risk.class}" style="display: inline-block; margin-top: 1rem;">
+              ${risk.level}
+            </div>
+            <p style="margin-top: 1rem;">${risk.recommendation}</p>
+          </div>
+        `;
+      });
+      
+      // Listen for Firebase data changes
+      database.ref('/').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          // Update device status
+          if (data.status) {
+            deviceStatusElement.textContent = data.status;
+          }
+          
+          // Update IOP data
+          if (data.Final_IOP) {
+            updateIopDisplay(data.Final_IOP);
+            updateChart(Date.now(), data.Final_IOP);
+          } else if (data.Dynamic_IOP) {
+            updateIopDisplay(data.Dynamic_IOP);
+            updateChart(Date.now(), data.Dynamic_IOP);
+          }
+          
+          // Update last updated time
+          lastUpdatedElement.textContent = new Date().toLocaleString();
+        }
+      });
+    });
+    
+    // Function to show a specific page
+    function showPage(page) {
+      homePage.classList.add('hidden');
+      dashboardPage.classList.add('hidden');
+      
+      if (page === 'home') {
+        homePage.classList.remove('hidden');
+      } else if (page === 'dashboard') {
+        dashboardPage.classList.remove('hidden');
       }
     }
   </script>
